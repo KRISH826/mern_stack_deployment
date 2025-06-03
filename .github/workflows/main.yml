@@ -4,14 +4,9 @@ on:
   push:
     branches:
       - master
-  pull_request:
-    types: [closed]
-    branches:
-      - master
 
 jobs:
   deploy:
-    if: github.event.pull_request.merged == true || github.event_name == 'push'
     runs-on: self-hosted
 
     strategy:
@@ -22,15 +17,18 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # Setup Node for backend AFTER checkout
-      - name: Setup Node for backend
+      - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
           cache: 'npm'
-          cache-dependency-path: ./bill-backend/package-lock.json
+          cache-dependency-path: |
+            bill-backend/package-lock.json
+            bill-frontend/app/package-lock.json
 
-      # Install backend dependencies
+      # ------------------------------
+      # BACKEND SETUP
+      # ------------------------------
       - name: Install backend dependencies
         working-directory: ./bill-backend
         run: npm install
@@ -44,16 +42,11 @@ jobs:
       - name: Start backend with PM2
         working-directory: ./bill-backend
         run: |
-          pm2 restart backend || pm2 start index.js --name backend
+          /home/ubuntu/.nvm/versions/node/v22.16.0/bin/pm2 restart backend || /home/ubuntu/.nvm/versions/node/v22.16.0/bin/pm2 start index.js --name backend
 
-      # Setup Node for frontend
-      - name: Setup Node for frontend
-        uses: actions/setup-node@v3
-        with:
-          node-version: ${{ matrix.node-version }}
-          cache: 'npm'
-          cache-dependency-path: ./bill-frontend/app/package-lock.json
-
+      # ------------------------------
+      # FRONTEND SETUP
+      # ------------------------------
       - name: Clean npm cache & remove existing dependencies
         working-directory: ./bill-frontend/app
         run: |
