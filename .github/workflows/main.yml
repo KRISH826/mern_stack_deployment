@@ -22,18 +22,15 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Use Node.js ${{ matrix.node-version }}
+      # Setup Node and cache dependencies for backend
+      - name: Setup Node for backend
         uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
           cache: 'npm'
-          cache-dependency-path: |
-            bill-backend/package-lock.json
-            bill-frontend/app/package-lock.json
+          cache-dependency-path: bill-backend/package-lock.json
 
-      # ------------------------------
-      # BACKEND SETUP
-      # ------------------------------
+      # Install backend dependencies
       - name: Install backend dependencies
         working-directory: ./bill-backend
         run: npm install
@@ -47,11 +44,16 @@ jobs:
       - name: Start backend with PM2
         working-directory: ./bill-backend
         run: |
-          pm2 restart backend || pm2 start index.js --name backend
+          /home/ubuntu/.nvm/versions/node/v22.16.0/bin/pm2 restart backend || /home/ubuntu/.nvm/versions/node/v22.16.0/bin/pm2 start index.js --name backend
 
-      # ------------------------------
-      # FRONTEND SETUP
-      # ------------------------------
+      # Setup Node and cache dependencies for frontend
+      - name: Setup Node for frontend
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+          cache-dependency-path: bill-frontend/app/package-lock.json
+
       - name: Clean npm cache & remove existing dependencies
         working-directory: ./bill-frontend/app
         run: |
