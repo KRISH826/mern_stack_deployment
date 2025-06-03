@@ -1,0 +1,80 @@
+name: Deploy Fullstack App on EC2
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    types: [closed]
+    branches:
+      - master
+
+jobs:
+  deploy:
+    if: github.event.pull_request.merged == true || github.event_name == 'push'
+    runs-on: self-hosted
+
+    strategy:
+      matrix:
+        node-version: [22.x]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Setup Node for backend AFTER checkout
+      - name: Setup Node for backend
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+          cache-dependency-path: ./bill-backend/package-lock.json
+
+      # Install backend dependencies
+      - name: Install backend dependencies
+        working-directory: ./bill-backend
+        run: npm install
+
+      - name: Create backend .env file
+        working-directory: ./bill-backend
+        run: |
+          touch .env
+          echo "${{ secrets.PROD_BACKEND_ENV }}" > .env
+
+      - name: Start backend with PM2
+        working-directory: ./bill-backend
+        run: |
+          pm2 restart backend || pm2 start index.js --name backend
+
+      # Setup Node for frontend
+      - name: Setup Node for frontend
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+          cache-dependency-path: ./bill-frontend/app/package-lock.json
+
+      - name: Clean npm cache & remove existing dependencies
+        working-directory: ./bill-frontend/app
+        run: |
+          rm -rf node_modules package-lock.json
+          npm cache clean --force
+
+      - name: Install frontend dependencies
+        working-directory: ./bill-frontend/app
+        run: npm install
+
+      - name: Create frontend .env file
+        working-directory: ./bill-frontend/app
+        run: |
+          touch .env
+          echo "${{ secrets.PROD_FRONTEND_ENV }}" > .env
+
+      - name: Build frontend
+        working-directory: ./bill-frontend/app
+        run: npm run build
+
+      - name: Deploy frontend to Nginx
+        run: |
+          sudo rm -rf /var/www/html/*
+          sudo cp -r ./bill-frontend/app/dist/* /var/www/html/
