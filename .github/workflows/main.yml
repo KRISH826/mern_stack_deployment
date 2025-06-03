@@ -22,13 +22,13 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # Setup Node and cache dependencies for backend
+      # Setup Node for backend AFTER checkout
       - name: Setup Node for backend
         uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
           cache: 'npm'
-          cache-dependency-path: bill-backend/package-lock.json
+          cache-dependency-path: ./bill-backend/package-lock.json
 
       # Install backend dependencies
       - name: Install backend dependencies
@@ -46,13 +46,13 @@ jobs:
         run: |
           pm2 restart backend || pm2 start index.js --name backend
 
-      # Setup Node and cache dependencies for frontend
+      # Setup Node for frontend
       - name: Setup Node for frontend
         uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
           cache: 'npm'
-          cache-dependency-path: bill-frontend/app/package-lock.json
+          cache-dependency-path: ./bill-frontend/app/package-lock.json
 
       - name: Clean npm cache & remove existing dependencies
         working-directory: ./bill-frontend/app
