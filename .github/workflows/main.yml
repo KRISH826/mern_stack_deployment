@@ -55,7 +55,7 @@ jobs:
 
       - name: Install frontend dependencies
         working-directory: ./bill-frontend/app
-        run: npm install
+        run: npm install --force
 
       - name: Create frontend .env file
         working-directory: ./bill-frontend/app
