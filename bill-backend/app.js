@@ -30,23 +30,27 @@ app.get("/", (req, res) => {
     res.send("Hello World!");
 });
 
-app.get("/todos", async (req,res) => {
-    try {
-        const cachedData = await redisClient.get("todos");
-        if (cachedData !== null) {
-            console.log("Data fetched from cache");
-            return res.json(JSON.parse(cachedData));
-        } 
-        else {
-            console.log("not chached data");
-            const {data} = await axios("https://jsonplaceholder.typicode.com/todos")
-            await redisClient.set("todos", JSON.stringify(data), "EX", 60);
-            return res.json(data);
-        }
-    } catch (error) {
+// app.get("/todos", async (req,res) => {
+//     try {
+//         const cachedData = await redisClient.get("todos");
+//         if (cachedData !== null) {
+//             console.log("Data fetched from cache");
+//             return res.json(JSON.parse(cachedData));
+//         } 
+//         else {
+//             console.log("not chached data");
+//             const {data} = await axios("https://jsonplaceholder.typicode.com/todos")
+//             await redisClient.set("todos", JSON.stringify(data), "EX", 60);
+//             return res.json(data);
+//         }
+//     } catch (error) {
         
-    }
-})
+//     }
+// })
+
+app.get('/health', (req, res) => {
+  res.send("Hello World from health check!");
+});
 app.use("/api/v1/user", userRouter);
 app.use("/api/v1/bills", billsRouter);
 app.use("/api/v1/stats", statsRouter); // Assuming you want to use the same router for stats
