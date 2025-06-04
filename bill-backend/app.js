@@ -7,12 +7,9 @@ import { connectDb } from "./src/db/db.js";
 import userRouter from "./src/routes/user.routes.js";
 import billsRouter from "./src/routes/bills.routes.js";
 import statsRouter from "./src/routes/stats.routes.js";
-import {Redis} from "ioredis"
-import axios from "axios";
 
 dotenv.config();
 
-const redisClient = new Redis();
 
 const app = express();
 const corsOptions = {
@@ -30,23 +27,6 @@ app.get("/", (req, res) => {
     res.send("Hello World!");
 });
 
-// app.get("/todos", async (req,res) => {
-//     try {
-//         const cachedData = await redisClient.get("todos");
-//         if (cachedData !== null) {
-//             console.log("Data fetched from cache");
-//             return res.json(JSON.parse(cachedData));
-//         } 
-//         else {
-//             console.log("not chached data");
-//             const {data} = await axios("https://jsonplaceholder.typicode.com/todos")
-//             await redisClient.set("todos", JSON.stringify(data), "EX", 60);
-//             return res.json(data);
-//         }
-//     } catch (error) {
-        
-//     }
-// })
 
 app.get('/api/health', (req, res) => {
   res.send("Hello World from health check!");
