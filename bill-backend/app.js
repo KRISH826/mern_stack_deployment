@@ -48,7 +48,7 @@ app.get("/", (req, res) => {
 //     }
 // })
 
-app.get('/health', (req, res) => {
+app.get('/api/health', (req, res) => {
   res.send("Hello World from health check!");
 });
 app.use("/api/v1/user", userRouter);
